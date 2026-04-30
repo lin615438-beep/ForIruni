@@ -3,24 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自定義抽獎系統</title>
+    <title>給魯尼的自定義抽獎系統</title>
     <style>
-        :root { --primary: #e63946; --secondary: #457b9d; --bg: #f1faee; }
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 900px; margin-bottom: 20px; }
-        h2 { color: var(--secondary); border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
+        :root { --primary: #e63946; --secondary: #457b9d; --bg: #f1faee; --dark: #1d3557; }
+        body {
+    font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f1faee;}
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; 
+    background-image: url('貼貼哈士祈.png');
+    background-repeat: repeat;
+    background-size: 650px; 
+    opacity: 0.15; 
+}
+       .card { 
+    background: rgba(255, 255, 255, 0.98);
+    padding: 25px;
+    border-radius: 20px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+    width: 100%; 
+    max-width: 900px; 
+    margin-bottom: 25px; 
+    box-sizing: border-box; 
+    border: 1px solid rgba(0,0,0,0.05);}
+        h2 { color: var(--secondary); border-bottom: 2px solid var(--bg); padding-bottom: 10px; margin-top: 0; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: none; box-sizing: border-box; }
-        .control-panel { text-align: center; padding: 20px; background: #a8dadc; border-radius: 12px; }
-        #resultDisplay { font-size: 2rem; font-weight: bold; color: var(--primary); margin: 20px 0; min-height: 60px; }
-        button { padding: 12px 25px; font-size: 18px; cursor: pointer; border: none; border-radius: 8px; transition: 0.3s; background: var(--primary); color: white; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+        textarea { width: 100%; height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical; box-sizing: border-box; }
+        .control-panel { 
+    background: #ffffff !important; 
+    border: 3px solid #a8dadc;}
+        #resultDisplay { font-size: 2.5rem; font-weight: bold; color: var(--primary); margin: 20px 0; min-height: 80px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        button { padding: 12px 25px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; transition: 0.3s; background: var(--primary); color: white; font-weight: bold; }
         button:hover { opacity: 0.8; transform: translateY(-2px); }
-        button:disabled { background: #ccc; transform: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        button:disabled { background: #ccc; transform: none; cursor: not-allowed; }
+        .btn-secondary { background: var(--secondary); }
+        .btn-export { background: #2a9d8f; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         th { background: var(--secondary); color: white; }
-        .count-badge { background: var(--secondary); color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .status-text { font-size: 0.9rem; color: #666; margin-top: 5px; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js">
+</script>
 </head>
 <body>
 
@@ -29,30 +65,37 @@
     <div class="grid">
         <div>
             <label><b>1. 抽獎名單 (一人一行)</b></label>
-            <textarea id="nameInput" placeholder="請輸入姓名，例如：&#10;王小月&#10;伊魯尼..."></textarea>
-            <div id="nameCount" class="status">目前名單：0 人</div>
+            <textarea id="nameInput" placeholder="請輸入姓名,例如：&#10;王小月&#10;伊魯尼..."></textarea>
+            <div id="nameCount" class="status-text">目前名單：0 人</div>
         </div>
         <div>
-            <label><b>2. 獎項設定 (格式：獎名,數量)</b></label>
-            <textarea id="prizeInput" placeholder="格式：獎稱,數量,例如：&#10;(注意：獎項會由上而下抽出得獎者)&#10;粉色狗鍊,1&#10;狗勾飼料,2&#10;握手券,50"></textarea>
+            <label><b>2. 獎項設定 (獎名,數量)</b></label>
+            <textarea id="prizeInput" placeholder="格式：獎稱,數量&#10;(注意：獎項會由上而下抽出得獎者)&#10;例如：&#10;粉色狗鍊,1&#10;狗勾飼料,2"></textarea>
+            <div id="prizeCount" class="status-text">剩餘獎項：0 個</div>
         </div>
     </div>
     <div style="text-align: center; margin-top: 15px;">
-        <button onclick="initSystem()" style="background: var(--secondary);">確認套用設定</button>
+        <button onclick="initSystem()" class="btn-secondary">確認並套用設定</button>
     </div>
 </div>
 
 <div class="card control-panel">
     <h2>🎲 第二步：開始抽獎</h2>
-    <div id="currentPrizeInfo">請先套用設定</div>
-    <div id="resultDisplay">準備好抽獎了嗎？</div>
-    <button id="drawBtn" onclick="draw()" disabled>抽出一位幸運兒</button>
+    <div id="currentPrizeInfo" style="font-weight: bold; color: var(--secondary);">請先完成上方設定</div>
+    <div id="resultDisplay">READY?</div>
+    <div class="btn-group">
+        <button id="drawBtn" onclick="draw()" disabled>單次抽獎</button>
+        <button id="quickDrawBtn" onclick="quickDrawAll()" class="btn-secondary" disabled>一鍵抽完所有獎項</button>
+    </div>
 </div>
 
 <div class="card">
-    <h2>📜 中獎記錄</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>📜 中獎記錄</h2>
+        <button onclick="exportCSV()" class="btn-export">匯出結果 (CSV)</button>
+    </div>
     <table id="history">
-        <thead><tr><th>獎項</th><th>得獎者</th></tr></thead>
+        <thead><tr><th>序號</th><th>獎項</th><th>得獎者</th></tr></thead>
         <tbody></tbody>
     </table>
 </div>
@@ -60,81 +103,131 @@
 <script>
     let participants = [];
     let prizePool = [];
+    let drawCount = 0;
 
-    // 初始化系統
     function initSystem() {
         const nameText = document.getElementById('nameInput').value.trim();
         const prizeText = document.getElementById('prizeInput').value.trim();
 
         if (!nameText || !prizeText) {
-            alert("請輸入名單與獎項內容！");
+            alert("請確保名單與獎項皆已輸入！");
             return;
         }
 
-        // 處理人名
+        // 過濾空行並去除空白
         participants = nameText.split('\n').map(n => n.trim()).filter(n => n !== "");
         
-        // 處理獎項 (展開成單個獎項陣列)
         prizePool = [];
-        const prizeLines = prizeText.split('\n');
-        prizeLines.forEach(line => {
-            const [name, count] = line.split(',');
-            const num = parseInt(count) || 1;
-            for (let i = 0; i < num; i++) {
-                prizePool.push(name.trim());
+        prizeText.split('\n').forEach(line => {
+            const parts = line.split(',');
+            if (parts.length >= 2) {
+                const name = parts[0].trim();
+                const num = parseInt(parts[1]) || 0;
+                for (let i = 0; i < num; i++) prizePool.push(name);
             }
         });
 
-        document.getElementById('nameCount').innerText = `目前名單：${participants.length} 人`;
-        document.getElementById('currentPrizeInfo').innerText = `剩餘獎項總數：${prizePool.length} 個`;
+        if (prizePool.length === 0) {
+            alert("獎項格式錯誤，請使用「獎名,數量」格式（例如：大獎,1）");
+            return;
+        }
+
+        updateStatus();
         document.getElementById('drawBtn').disabled = false;
-        alert("設定成功！共有 " + participants.length + " 位參與者。");
+        document.getElementById('quickDrawBtn').disabled = false;
+        document.getElementById('resultDisplay').innerText = "準備就緒！";
+        alert(`設定成功！參與者：${participants.length} 人，總獎項：${prizePool.length} 個`);
+    }
+
+    function updateStatus() {
+        document.getElementById('nameCount').innerText = `目前名單：${participants.length} 人`;
+        document.getElementById('prizeCount').innerText = `剩餘獎項：${prizePool.length} 個`;
+        document.getElementById('currentPrizeInfo').innerText = prizePool.length > 0 ? 
+            `當前抽出獎項：【${prizePool[0]}】` : "獎項已全數抽完！";
     }
 
     function draw() {
-        if (participants.length === 0) {
-            alert("名單已空！");
-            return;
-        }
-        if (prizePool.length === 0) {
-            alert("獎項已全數抽完！");
+        if (participants.length === 0 || prizePool.length === 0) {
+            alert("名單或獎項已空！");
             return;
         }
 
         const btn = document.getElementById('drawBtn');
+        const qBtn = document.getElementById('quickDrawBtn');
         const res = document.getElementById('resultDisplay');
+        
         btn.disabled = true;
+        qBtn.disabled = true;
 
-        // 動畫效果
-        let timer = 0;
-        let shuffle = setInterval(() => {
+        let counter = 0;
+        let totalTicks = 20; 
+        let speed = 50;
+
+        // 減速動畫邏輯
+        function runAnimation() {
             const randIdx = Math.floor(Math.random() * participants.length);
             res.innerText = "🌀 " + participants[randIdx];
-            timer++;
-            if (timer > 10) {
-                clearInterval(shuffle);
-                finalize();
-            }
-        }, 100);
-
-        function finalize() {
-            const pIdx = Math.floor(Math.random() * participants.length);
-            const winner = participants.splice(pIdx, 1)[0]; // 移除已中獎者
-            const prize = prizePool.shift(); // 取出目前最高順位的獎項
-
-            res.innerHTML = `🎉 <span style="color:#e63946">${winner}</span><br><small>獲得：${prize}</small>`;
             
-            // 記錄到表格
-            const table = document.getElementById('history').getElementsByTagName('tbody')[0];
-            const row = table.insertRow(0);
-            row.insertCell(0).innerText = prize;
-            row.insertCell(1).innerText = winner;
-
-            // 更新狀態
-            document.getElementById('nameCount').innerText = `目前名單：${participants.length} 人`;
-            document.getElementById('currentPrizeInfo').innerText = `下一個獎項：${prizePool[0] || '無'} (剩餘 ${prizePool.length} 個)`;
-            btn.disabled = false;
+            counter++;
+            if (counter < totalTicks) {
+                speed += 10; 
+                setTimeout(runAnimation, speed);
+            } else {
+                finalizeDraw();
+                btn.disabled = false;
+                qBtn.disabled = false;
+            }
         }
+        runAnimation();
+    }
+
+    function finalizeDraw() {
+        if (participants.length === 0 || prizePool.length === 0) return;
+
+        const pIdx = Math.floor(Math.random() * participants.length);
+        const winner = participants.splice(pIdx, 1)[0];
+        const prize = prizePool.shift();
+        drawCount++;
+
+        document.getElementById('resultDisplay').innerHTML = 
+            `<small style="color:#666">恭喜獲獎！</small><div>🎉 ${winner}</div><div style="font-size:1.2rem; margin-top:5px;">獎項：${prize}</div>`;
+        
+        addToTable(prize, winner);
+        updateStatus();confetti();
+    }
+
+    function quickDrawAll() {
+        if (!confirm("確定要一次抽出剩餘所有獎項嗎？")) return;
+        while (prizePool.length > 0 && participants.length > 0) {
+            finalizeDraw();
+        }
+        document.getElementById('resultDisplay').innerText = "全部獎項抽取完畢！";
+    }
+
+    function addToTable(prize, winner) {
+        const tableBody = document.getElementById('history').querySelector('tbody');
+        const row = tableBody.insertRow(0);
+        row.insertCell(0).innerText = drawCount;
+        row.insertCell(1).innerText = prize;
+        row.insertCell(2).innerText = winner;
+    }
+
+    function exportCSV() {
+        let csvContent = "\uFEFF序號,獎項,得獎者\n";
+        const rows = document.querySelectorAll("#history tbody tr");
+        if (rows.length === 0) return alert("尚無得獎記錄！");
+
+        rows.forEach(row => {
+            const cols = row.querySelectorAll("td");
+            const rowData = Array.from(cols).map(c => c.innerText).join(",");
+            csvContent += rowData + "\n";
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `抽獎結果_${new Date().toLocaleDateString()}.csv`;
+        link.click();
     }
 </script>
 
