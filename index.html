@@ -42,7 +42,7 @@ body::before {
         .control-panel { 
     background: #a8dadc !important; 
     border: 3px solid #a8dadc;}
-        #resultDisplay { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); font-size: 2.5rem; font-weight: bold; color: var(--primary); margin: 20px 0; min-height: 45px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        #resultDisplay { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); font-size: 2.0rem; font-weight: bold; color: var(--primary); margin: 20px 0; min-height: 80px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
         .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         button { padding: 12px 25px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; transition: 0.3s; background: var(--primary); color: white; font-weight: bold; }
         button:hover { opacity: 0.8; transform: translateY(-2px); }
@@ -82,7 +82,7 @@ body::before {
 <div class="card control-panel">
     <h2>🎲 第二步：開始抽獎</h2>
     <div id="currentPrizeInfo" style="font-weight: bold; color: var(--secondary);">請先完成上方設定</div>
-    <div id="resultDisplay">準備好了嗎？</div>
+    <div id="resultDisplay">準備好抽獎了嗎？</div>
     <div class="btn-group">
         <button id="drawBtn" onclick="draw()" disabled>單次抽獎</button>
         <button id="quickDrawBtn" onclick="quickDrawAll()" class="btn-secondary" disabled>一鍵抽完所有獎項</button>
