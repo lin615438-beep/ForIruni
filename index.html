@@ -40,7 +40,7 @@ body::before {
         @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
         textarea { width: 100%; height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; resize: vertical; box-sizing: border-box; }
         .control-panel { 
-    background: #ffffff !important; 
+    background: #a8dadc !important; 
     border: 3px solid #a8dadc;}
         #resultDisplay { font-size: 2.5rem; font-weight: bold; color: var(--primary); margin: 20px 0; min-height: 80px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
         .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
@@ -82,7 +82,7 @@ body::before {
 <div class="card control-panel">
     <h2>🎲 第二步：開始抽獎</h2>
     <div id="currentPrizeInfo" style="font-weight: bold; color: var(--secondary);">請先完成上方設定</div>
-    <div id="resultDisplay">>準備好抽獎了嗎？</div>
+    <div id="resultDisplay">準備好抽獎了嗎？</div>
     <div class="btn-group">
         <button id="drawBtn" onclick="draw()" disabled>單次抽獎</button>
         <button id="quickDrawBtn" onclick="quickDrawAll()" class="btn-secondary" disabled>一鍵抽完所有獎項</button>
